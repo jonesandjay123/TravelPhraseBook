@@ -91,7 +91,7 @@ fun SentenceItem(
                     // 通知 ViewModel 更新数据库
                     onTranslationChanged(sentence)
                 },
-                placeholder = { Text("添加翻译内容") },
+                placeholder = { Text("貼上翻譯語句") },
                 modifier = Modifier.fillMaxWidth()
             )
 

@@ -42,7 +42,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
         topBar = {
             // 顶部应用栏，包含语言选择按钮
             TopAppBar(
-                title = { Text(text = "旅行短语手册") },
+                title = { Text(text = "旅行短語手冊") },
                 actions = {
                     LanguageDropdown(
                         languages = languages,
@@ -88,7 +88,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                         value = newSentence,
                         onValueChange = { newSentence = it },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("輸入新的繁体中文句子") },
+                        placeholder = { Text("新增語句...") },
                         singleLine = true
                     )
                     Button(
@@ -103,7 +103,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                         },
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
-                        Text("添加")
+                        Text("新增")
                     }
                 }
             }
