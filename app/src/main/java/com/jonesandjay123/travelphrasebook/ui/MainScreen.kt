@@ -1,10 +1,12 @@
 package com.jonesandjay123.travelphrasebook.ui
 
+import android.app.Application
 import android.speech.tts.TextToSpeech
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jonesandjay123.travelphrasebook.MainViewModel
@@ -16,8 +18,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
+    val application = LocalContext.current.applicationContext as Application
     val viewModel: MainViewModel = viewModel(
-        factory = MainViewModelFactory(sentenceDao)
+        factory = MainViewModelFactory(sentenceDao, application)
     )
 
     val sentences = viewModel.sentences
@@ -71,6 +74,9 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                         },
                         onDeleteSentence = { sentence ->
                             viewModel.deleteSentence(sentence)
+                        },
+                        onSentenceOrderChanged = {
+                            viewModel.onSentenceOrderChanged()
                         },
                         modifier = Modifier.weight(1f) // 确保列表占据剩余空间
                     )

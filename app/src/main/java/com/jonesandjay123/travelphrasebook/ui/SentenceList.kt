@@ -20,16 +20,20 @@ import org.burnoutcrew.reorderable.reorderable
 
 @Composable
 fun SentenceList(
-    sentences: MutableList<Sentence>, // 改为 MutableList
+    sentences: MutableList<Sentence>,
     currentLanguage: String,
     tts: TextToSpeech?,
     onTranslationChanged: (Sentence) -> Unit,
     onDeleteSentence: (Sentence) -> Unit,
+    onSentenceOrderChanged: () -> Unit, // 确保包含这个参数
     modifier: Modifier = Modifier
 ) {
     val reorderState = rememberReorderableLazyListState(
         onMove = { from, to ->
             sentences.add(to.index, sentences.removeAt(from.index))
+        },
+        onDragEnd = { startIndex, endIndex ->
+            onSentenceOrderChanged()
         }
     )
 
