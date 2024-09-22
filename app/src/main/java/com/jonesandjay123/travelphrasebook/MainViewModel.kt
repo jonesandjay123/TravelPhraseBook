@@ -3,15 +3,31 @@ package com.jonesandjay123.travelphrasebook
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel(private val sentenceDao: SentenceDao) : ViewModel() {
     val sentences = mutableStateListOf<Sentence>()
 
     init {
         viewModelScope.launch {
-            val sentenceList = sentenceDao.getAllSentences()
-            sentences.addAll(sentenceList)
+            val sentenceList = withContext(Dispatchers.IO) {
+                sentenceDao.getAllSentences()
+            }
+            if (sentenceList.isEmpty()) {
+                // 添加测试数据
+                val testSentences = listOf(
+                    Sentence(chineseText = "你好", thaiText = "สวัสดี", japaneseText = "こんにちは"),
+                    Sentence(chineseText = "谢谢", thaiText = "ขอบคุณ", japaneseText = "ありがとうございます")
+                )
+                testSentences.forEach { sentence ->
+                    sentenceDao.insertSentence(sentence)
+                }
+                sentences.addAll(testSentences)
+            } else {
+                sentences.addAll(sentenceList)
+            }
         }
     }
 

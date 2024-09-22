@@ -1,4 +1,4 @@
-package com.jonesandjay123.travelphrasebook
+package com.jonesandjay123.travelphrasebook.ui
 
 import android.speech.tts.TextToSpeech
 import androidx.compose.foundation.layout.*
@@ -7,65 +7,75 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jonesandjay123.travelphrasebook.MainViewModel
+import com.jonesandjay123.travelphrasebook.MainViewModelFactory
+import com.jonesandjay123.travelphrasebook.Sentence
+import com.jonesandjay123.travelphrasebook.SentenceDao
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(tts: TextToSpeech, sentenceDao: SentenceDao) {
-    // 創建 MainViewModel 的實例
+fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
     val viewModel: MainViewModel = viewModel(
         factory = MainViewModelFactory(sentenceDao)
     )
 
-    // 從 ViewModel 獲取句子列表
     val sentences = viewModel.sentences
 
-    // 語言列表
     val languages = listOf("中", "泰", "日")
     var currentLanguage by remember { mutableStateOf("中") }
 
-    // 新句子輸入
     var newSentence by remember { mutableStateOf("") }
 
-    // 更新 TTS 語言
     LaunchedEffect(currentLanguage) {
-        tts.language = when (currentLanguage) {
-            "中" -> Locale.CHINESE
-            "泰" -> Locale("th")
-            "日" -> Locale.JAPANESE
-            else -> Locale.CHINESE
+        if (tts != null) {
+            tts.language = when (currentLanguage) {
+                "中" -> Locale.CHINESE
+                "泰" -> Locale("th")
+                "日" -> Locale.JAPANESE
+                else -> Locale.CHINESE
+            }
         }
     }
 
     Scaffold(
         topBar = {
-            // 語言選擇下拉選單
-            LanguageDropdown(
-                languages = languages,
-                currentLanguage = currentLanguage,
-                onLanguageSelected = { selectedLanguage ->
-                    currentLanguage = selectedLanguage
+            // 顶部应用栏，包含语言选择按钮
+            TopAppBar(
+                title = { Text(text = "旅行短语手册") },
+                actions = {
+                    LanguageDropdown(
+                        languages = languages,
+                        currentLanguage = currentLanguage,
+                        onLanguageSelected = { selectedLanguage ->
+                            currentLanguage = selectedLanguage
+                        }
+                    )
                 }
             )
         },
         content = { paddingValues ->
             Column(
                 modifier = Modifier
-                    .padding(paddingValues)
                     .fillMaxSize()
+                    .padding(paddingValues)
             ) {
                 // 句子列表
-                SentenceList(
-                    sentences = sentences,
-                    currentLanguage = currentLanguage,
-                    tts = tts,
-                    onTranslationChanged = { sentence ->
-                        viewModel.updateSentence(sentence)
-                    }
-                )
+                if (tts != null) {
+                    SentenceList(
+                        sentences = sentences,
+                        currentLanguage = currentLanguage,
+                        tts = tts,
+                        onTranslationChanged = { sentence ->
+                            viewModel.updateSentence(sentence)
+                        },
+                        modifier = Modifier.weight(1f) // 确保列表占据剩余空间
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 新增句子輸入區域
+                // 新增句子输入区域
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -75,7 +85,7 @@ fun MainScreen(tts: TextToSpeech, sentenceDao: SentenceDao) {
                         value = newSentence,
                         onValueChange = { newSentence = it },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("輸入新的繁體中文句子") },
+                        placeholder = { Text("輸入新的繁体中文句子") },
                         singleLine = true
                     )
                     Button(

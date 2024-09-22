@@ -1,4 +1,4 @@
-package com.jonesandjay123.travelphrasebook
+package com.jonesandjay123.travelphrasebook.ui
 
 import android.speech.tts.TextToSpeech
 import androidx.compose.foundation.layout.Column
@@ -18,15 +18,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.jonesandjay123.travelphrasebook.Sentence
 
 @Composable
 fun SentenceItem(
     sentence: Sentence,
     currentLanguage: String,
-    tts: TextToSpeech,
+    tts: TextToSpeech?,
     onTranslationChanged: (Sentence) -> Unit
 ) {
-    var translationText by remember {
+    var translationText by remember(sentence, currentLanguage) {
         mutableStateOf(
             when (currentLanguage) {
                 "泰" -> sentence.thaiText ?: ""
@@ -35,6 +36,7 @@ fun SentenceItem(
             }
         )
     }
+
     val isTranslationAvailable = translationText.isNotBlank()
 
     Column(
@@ -47,29 +49,29 @@ fun SentenceItem(
             style = MaterialTheme.typography.bodyLarge
         )
 
-        // 翻譯內容輸入框
+        // 翻译内容输入框
         OutlinedTextField(
             value = translationText,
             onValueChange = {
                 translationText = it
 
-                // 更新句子的翻譯內容
+                // 更新句子的翻译内容
                 when (currentLanguage) {
                     "泰" -> sentence.thaiText = translationText
                     "日" -> sentence.japaneseText = translationText
                 }
 
-                // 通知 ViewModel 更新資料庫
+                // 通知 ViewModel 更新数据库
                 onTranslationChanged(sentence)
             },
-            placeholder = { Text("添加翻譯內容") },
+            placeholder = { Text("添加翻译内容") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 語音播放按鈕
+        // 语音播放按钮
         IconButton(
             onClick = {
-                if (isTranslationAvailable) {
+                if (isTranslationAvailable && tts != null) {
                     tts.speak(translationText, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
             },
