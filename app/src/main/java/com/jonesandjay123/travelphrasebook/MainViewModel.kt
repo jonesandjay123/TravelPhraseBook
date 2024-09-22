@@ -22,7 +22,8 @@ class MainViewModel(private val sentenceDao: SentenceDao) : ViewModel() {
                     Sentence(chineseText = "謝謝", thaiText = "ขอบคุณ", japaneseText = "ありがとうございます")
                 )
                 testSentences.forEach { sentence ->
-                    sentenceDao.insertSentence(sentence)
+                    val newId = sentenceDao.insertSentence(sentence)
+                    sentence.id = newId.toInt()
                 }
                 sentences.addAll(testSentences)
             } else {
@@ -33,8 +34,10 @@ class MainViewModel(private val sentenceDao: SentenceDao) : ViewModel() {
 
     fun addSentence(sentence: Sentence) {
         viewModelScope.launch {
-            val id = sentenceDao.insertSentence(sentence)
-            sentence.id = id.toInt() // 假設 id 是 Long，Sentence.id 是 Int
+            val newId = withContext(Dispatchers.IO) {
+                sentenceDao.insertSentence(sentence)
+            }
+            sentence.id = newId.toInt()
             sentences.add(sentence)
         }
     }

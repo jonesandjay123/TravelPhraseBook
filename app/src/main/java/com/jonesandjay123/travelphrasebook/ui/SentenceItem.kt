@@ -31,7 +31,8 @@ fun SentenceItem(
     currentLanguage: String,
     tts: TextToSpeech?,
     onTranslationChanged: (Sentence) -> Unit,
-    onDeleteSentence: (Sentence) -> Unit // 新增参数
+    onDeleteSentence: (Sentence) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var translationText by remember(sentence, currentLanguage) {
         mutableStateOf(

@@ -5,7 +5,7 @@ coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
-kotlinxCoroutinesAndroid = "1.7.3"
+reorderable = "0.9.6"
 coroutines = "1.7.3"
 lifecycleRuntimeKtx = "2.6.1"
 activityCompose = "1.9.0"
@@ -14,6 +14,7 @@ roomCommon = "2.6.1"
 room = "2.6.1"
 
 [libraries]
+reorderable = { module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
