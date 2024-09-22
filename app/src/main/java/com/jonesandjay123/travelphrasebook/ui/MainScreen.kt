@@ -69,6 +69,9 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                         onTranslationChanged = { sentence ->
                             viewModel.updateSentence(sentence)
                         },
+                        onDeleteSentence = { sentence ->
+                            viewModel.deleteSentence(sentence)
+                        },
                         modifier = Modifier.weight(1f) // 确保列表占据剩余空间
                     )
                 }

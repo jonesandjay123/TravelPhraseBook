@@ -14,6 +14,7 @@ fun SentenceList(
     currentLanguage: String,
     tts: TextToSpeech?,
     onTranslationChanged: (Sentence) -> Unit,
+    onDeleteSentence: (Sentence) -> Unit, // 新增参数
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -24,7 +25,8 @@ fun SentenceList(
                 sentence = sentence,
                 currentLanguage = currentLanguage,
                 tts = tts,
-                onTranslationChanged = onTranslationChanged
+                onTranslationChanged = onTranslationChanged,
+                onDeleteSentence = onDeleteSentence
             )
         }
     }

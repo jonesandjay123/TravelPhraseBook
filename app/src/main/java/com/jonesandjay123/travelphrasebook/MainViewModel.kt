@@ -19,7 +19,7 @@ class MainViewModel(private val sentenceDao: SentenceDao) : ViewModel() {
                 // 添加测试数据
                 val testSentences = listOf(
                     Sentence(chineseText = "你好", thaiText = "สวัสดี", japaneseText = "こんにちは"),
-                    Sentence(chineseText = "谢谢", thaiText = "ขอบคุณ", japaneseText = "ありがとうございます")
+                    Sentence(chineseText = "謝謝", thaiText = "ขอบคุณ", japaneseText = "ありがとうございます")
                 )
                 testSentences.forEach { sentence ->
                     sentenceDao.insertSentence(sentence)
@@ -43,6 +43,15 @@ class MainViewModel(private val sentenceDao: SentenceDao) : ViewModel() {
         viewModelScope.launch {
             sentenceDao.updateSentence(sentence)
             // 根據需要更新本地列表中的句子
+        }
+    }
+
+    fun deleteSentence(sentence: Sentence) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                sentenceDao.deleteSentence(sentence)
+            }
+            sentences.remove(sentence)
         }
     }
 }
