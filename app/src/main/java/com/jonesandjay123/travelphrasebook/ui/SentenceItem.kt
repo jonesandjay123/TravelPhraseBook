@@ -1,25 +1,12 @@
 package com.jonesandjay123.travelphrasebook.ui
 
 import android.speech.tts.TextToSpeech
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -45,10 +32,17 @@ fun SentenceItem(
         )
     }
 
-    val isTranslationAvailable = translationText.isNotBlank()
+    // 判断播放按钮是否可用
+    val isPlayable = when (currentLanguage) {
+        "中" -> sentence.chineseText.isNotBlank()
+        "英" -> translationText.isNotBlank()
+        "日" -> translationText.isNotBlank()
+        "泰" -> translationText.isNotBlank()
+        else -> false
+    }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -58,16 +52,37 @@ fun SentenceItem(
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
+            // 播放按钮、中文文本和刪除按鈕在同一行
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // 播放按鈕
+                IconButton(
+                    onClick = {
+                        val textToSpeak = when (currentLanguage) {
+                            "中" -> sentence.chineseText
+                            else -> translationText
+                        }
+                        tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
+                    },
+                    enabled = isPlayable
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "播放"
+                    )
+                }
+
+                // 中文文本
                 Text(
                     text = sentence.chineseText,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
                 )
 
-                // 删除按钮
+                // 刪除按鈕
                 IconButton(
                     onClick = { onDeleteSentence(sentence) }
                 ) {
@@ -78,38 +93,27 @@ fun SentenceItem(
                 }
             }
 
-            // 翻译内容输入框
-            OutlinedTextField(
-                value = translationText,
-                onValueChange = {
-                    translationText = it
+            // 翻譯內容輸入框(非中文時顯示)
+            if (currentLanguage != "中") {
+                OutlinedTextField(
+                    value = translationText,
+                    onValueChange = {
+                        translationText = it
 
-                    // 更新句子的翻译内容
-                    when (currentLanguage) {
-                        "英" -> sentence.englishText = translationText
-                        "日" -> sentence.japaneseText = translationText
-                        "泰" -> sentence.thaiText = translationText
-                    }
+                        // 更新語句的翻譯內容
+                        when (currentLanguage) {
+                            "英" -> sentence.englishText = translationText
+                            "日" -> sentence.japaneseText = translationText
+                            "泰" -> sentence.thaiText = translationText
+                        }
 
-                    // 通知 ViewModel 更新数据库
-                    onTranslationChanged(sentence)
-                },
-                placeholder = { Text("貼上翻譯語句") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // 语音播放按钮
-            IconButton(
-                onClick = {
-                    if (isTranslationAvailable && tts != null) {
-                        tts.speak(translationText, TextToSpeech.QUEUE_FLUSH, null, null)
-                    }
-                },
-                enabled = isTranslationAvailable
-            ) {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "播放"
+                        // 通知 ViewModel 更新數據庫
+                        onTranslationChanged(sentence)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    label = { Text("語句譯文") }
                 )
             }
         }
