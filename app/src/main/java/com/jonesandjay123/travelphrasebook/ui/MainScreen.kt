@@ -4,11 +4,13 @@ import android.app.Application
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jonesandjay123.travelphrasebook.MainViewModel
 import com.jonesandjay123.travelphrasebook.MainViewModelFactory
@@ -45,7 +47,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Toast.makeText(
                     context,
-                    "所選語言不支持語音合成！",
+                    "所選語言不支援語音合成！",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -54,7 +56,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
 
     Scaffold(
         topBar = {
-            // 顶部应用栏，包含语言选择按钮
+            // 頂部應用欄，包含語言選擇按鈕
             TopAppBar(
                 title = { Text(text = "旅行短語手冊") },
                 actions = {
@@ -74,6 +76,43 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+                // 新增語句輸入區域
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            if (newSentence.isNotBlank()) {
+                                val sentence = Sentence(
+                                    chineseText = newSentence
+                                )
+                                viewModel.addSentence(sentence)
+                                newSentence = ""
+                            }
+                        },
+                        modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(
+                            text = "+",
+                            fontSize = 24.sp // 增大“+”號的大小
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextField(
+                        value = newSentence,
+                        onValueChange = { newSentence = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("新增語句...") },
+                        singleLine = true
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 // 句子列表
                 SentenceList(
                     sentences = sentences,
@@ -88,39 +127,8 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                     onSentenceOrderChanged = {
                         viewModel.onSentenceOrderChanged()
                     },
-                    modifier = Modifier.weight(1f) // 确保列表占据剩余空间
+                    modifier = Modifier.weight(1f) // 確保列表佔據剩餘空間
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // 新增句子输入区域
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    TextField(
-                        value = newSentence,
-                        onValueChange = { newSentence = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text("新增語句...") },
-                        singleLine = true
-                    )
-                    Button(
-                        onClick = {
-                            if (newSentence.isNotBlank()) {
-                                val sentence = Sentence(
-                                    chineseText = newSentence
-                                )
-                                viewModel.addSentence(sentence)
-                                newSentence = ""
-                            }
-                        },
-                        modifier = Modifier.padding(start = 8.dp)
-                    ) {
-                        Text("新增")
-                    }
-                }
             }
         }
     )
