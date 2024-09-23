@@ -5,6 +5,8 @@ import android.speech.tts.TextToSpeech
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -34,6 +36,8 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
 
     var newSentence by remember { mutableStateOf("") }
 
+    var showDialog by remember { mutableStateOf(false) }
+
     LaunchedEffect(currentLanguage) {
         if (tts != null) {
             val locale = when (currentLanguage) {
@@ -60,6 +64,15 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
             TopAppBar(
                 title = { Text(text = "旅行短語手冊") },
                 actions = {
+
+                    // 導入／匯出鈕
+                    IconButton(onClick = { showDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.ImportExport,
+                            contentDescription = "導入/導出"
+                        )
+                    }
+
                     LanguageDropdown(
                         languages = languages,
                         currentLanguage = currentLanguage,
@@ -76,6 +89,14 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+                // 如果需要顯示對話框
+                if (showDialog) {
+                    ImportExportDialog(
+                        onDismissRequest = { showDialog = false },
+                        // 其他需要的参数
+                    )
+                }
+
                 // 新增語句輸入區域
                 Row(
                     modifier = Modifier
