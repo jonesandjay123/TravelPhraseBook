@@ -8,6 +8,7 @@ data class Sentence(
     @PrimaryKey(autoGenerate = true)
     var id: Int = 0,
     val chineseText: String,
-    var thaiText: String? = null,
-    var japaneseText: String? = null
+    var englishText: String? = null,
+    var japaneseText: String? = null,
+    var thaiText: String? = null
 )

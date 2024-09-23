@@ -2,6 +2,7 @@ package com.jonesandjay123.travelphrasebook.ui
 
 import android.app.Application
 import android.speech.tts.TextToSpeech
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,24 +20,34 @@ import java.util.Locale
 @Composable
 fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
     val application = LocalContext.current.applicationContext as Application
+    val context = LocalContext.current
     val viewModel: MainViewModel = viewModel(
         factory = MainViewModelFactory(sentenceDao, application)
     )
 
     val sentences = viewModel.sentences
 
-    val languages = listOf("中", "泰", "日")
+    val languages = listOf("中", "英", "日", "泰")
     var currentLanguage by remember { mutableStateOf("中") }
 
     var newSentence by remember { mutableStateOf("") }
 
     LaunchedEffect(currentLanguage) {
         if (tts != null) {
-            tts.language = when (currentLanguage) {
+            val locale = when (currentLanguage) {
                 "中" -> Locale.CHINESE
-                "泰" -> Locale("th")
+                "英" -> Locale.ENGLISH
                 "日" -> Locale.JAPANESE
+                "泰" -> Locale("th")
                 else -> Locale.CHINESE
+            }
+            val result = tts.setLanguage(locale)
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Toast.makeText(
+                    context,
+                    "所選語言不支持語音合成！",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }
@@ -64,23 +75,21 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                     .padding(paddingValues)
             ) {
                 // 句子列表
-                if (tts != null) {
-                    SentenceList(
-                        sentences = sentences,
-                        currentLanguage = currentLanguage,
-                        tts = tts,
-                        onTranslationChanged = { sentence ->
-                            viewModel.updateSentence(sentence)
-                        },
-                        onDeleteSentence = { sentence ->
-                            viewModel.deleteSentence(sentence)
-                        },
-                        onSentenceOrderChanged = {
-                            viewModel.onSentenceOrderChanged()
-                        },
-                        modifier = Modifier.weight(1f) // 确保列表占据剩余空间
-                    )
-                }
+                SentenceList(
+                    sentences = sentences,
+                    currentLanguage = currentLanguage,
+                    tts = tts,
+                    onTranslationChanged = { sentence ->
+                        viewModel.updateSentence(sentence)
+                    },
+                    onDeleteSentence = { sentence ->
+                        viewModel.deleteSentence(sentence)
+                    },
+                    onSentenceOrderChanged = {
+                        viewModel.onSentenceOrderChanged()
+                    },
+                    modifier = Modifier.weight(1f) // 确保列表占据剩余空间
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 

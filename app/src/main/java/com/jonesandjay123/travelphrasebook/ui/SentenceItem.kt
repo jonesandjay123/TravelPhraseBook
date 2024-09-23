@@ -37,8 +37,9 @@ fun SentenceItem(
     var translationText by remember(sentence, currentLanguage) {
         mutableStateOf(
             when (currentLanguage) {
-                "泰" -> sentence.thaiText ?: ""
+                "英" -> sentence.englishText ?: ""
                 "日" -> sentence.japaneseText ?: ""
+                "泰" -> sentence.thaiText ?: ""
                 else -> ""
             }
         )
@@ -85,8 +86,9 @@ fun SentenceItem(
 
                     // 更新句子的翻译内容
                     when (currentLanguage) {
-                        "泰" -> sentence.thaiText = translationText
+                        "英" -> sentence.englishText = translationText
                         "日" -> sentence.japaneseText = translationText
+                        "泰" -> sentence.thaiText = translationText
                     }
 
                     // 通知 ViewModel 更新数据库
