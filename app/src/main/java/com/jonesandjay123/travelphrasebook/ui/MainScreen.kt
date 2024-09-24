@@ -104,7 +104,19 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                 if (showDialog) {
                     ImportExportDialog(
                         onDismissRequest = { showDialog = false },
-                        // 其他需要的参数
+                        sentences = sentences,
+                        onImport = { jsonText ->
+                            // 解析並導入數據的邏輯
+                            viewModel.importSentences(jsonText)
+                        },
+                        onExport = {
+                            // 導出數據的邏輯
+                            viewModel.exportSentences()
+                        },
+                        onExportWithPrompt = {
+                            // 带 prompt 導出數據的邏輯
+                            viewModel.exportSentencesWithPrompt()
+                        }
                     )
                 }
 

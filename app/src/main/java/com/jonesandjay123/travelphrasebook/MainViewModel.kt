@@ -3,13 +3,14 @@ package com.jonesandjay123.travelphrasebook
 import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainViewModel(private val sentenceDao: SentenceDao, application: Application) : ViewModel() {
+class MainViewModel(private val sentenceDao: SentenceDao, application: Application) : AndroidViewModel(application) {
     val sentences = mutableStateListOf<Sentence>()
     private val sharedPreferences = application.getSharedPreferences("sentence_prefs", Context.MODE_PRIVATE)
 
@@ -70,5 +71,20 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
             sentences.remove(sentence)
             saveSentenceOrder() // 保存排序顺序
         }
+    }
+
+    fun importSentences(jsonText: String) {
+        // 解析 JSON，更新数据库
+        // 注意需要在 IO 线程中执行数据库操作
+    }
+
+    fun exportSentences(): String {
+        // 获取当前的句子列表，序列化为 JSON 字符串并返回
+        return ""
+    }
+
+    fun exportSentencesWithPrompt(): String {
+        // 获取当前的句子列表，添加 prompt，序列化为 JSON 字符串并返回
+        return ""
     }
 }
