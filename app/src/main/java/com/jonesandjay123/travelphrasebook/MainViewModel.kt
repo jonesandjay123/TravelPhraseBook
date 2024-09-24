@@ -2,9 +2,11 @@ package com.jonesandjay123.travelphrasebook
 
 import android.app.Application
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -12,14 +14,19 @@ import kotlinx.coroutines.withContext
 
 class MainViewModel(private val sentenceDao: SentenceDao, application: Application) : AndroidViewModel(application) {
     val sentences = mutableStateListOf<Sentence>()
+
+    var isLoading by mutableStateOf(true)
+        private set
+
     private val sharedPreferences = application.getSharedPreferences("sentence_prefs", Context.MODE_PRIVATE)
 
     init {
         viewModelScope.launch {
+            //  從數據庫加載數據
             val sentenceList = withContext(Dispatchers.IO) {
                 sentenceDao.getAllSentences()
             }
-            // 从 SharedPreferences 中读取保存的顺序
+            // 從 SharedPreferences 中讀取保存的順序
             val orderString = sharedPreferences.getString("sentence_order", null)
             val orderedList = if (!orderString.isNullOrEmpty()) {
                 val orderIds = orderString.split(",").mapNotNull { it.toIntOrNull() }
@@ -30,6 +37,8 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
             }
 
             sentences.addAll(orderedList)
+            // 數據加載完畢後，將 isLoading 設置回 false
+            isLoading = false
         }
     }
 
@@ -58,8 +67,14 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
 
     fun updateSentence(sentence: Sentence) {
         viewModelScope.launch {
-            sentenceDao.updateSentence(sentence)
-            // 根據需要更新本地列表中的句子
+            withContext(Dispatchers.IO) {
+                sentenceDao.updateSentence(sentence)
+            }
+            // 更新本地列表中的句子
+            val index = sentences.indexOfFirst { it.id == sentence.id }
+            if (index != -1) {
+                sentences[index] = sentence
+            }
         }
     }
 

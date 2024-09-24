@@ -5,11 +5,13 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
     )
 
     val sentences = viewModel.sentences
+    val isLoading = viewModel.isLoading
 
     val languages = listOf("中", "英", "日", "泰")
     // 獲取 SharedPreferences 實例
@@ -106,15 +109,12 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                         onDismissRequest = { showDialog = false },
                         sentences = sentences,
                         onImport = { jsonText ->
-                            // 解析並導入數據的邏輯
                             viewModel.importSentences(jsonText)
                         },
                         onExport = {
-                            // 導出數據的邏輯
                             viewModel.exportSentences()
                         },
                         onExportWithPrompt = {
-                            // 带 prompt 導出數據的邏輯
                             viewModel.exportSentencesWithPrompt()
                         }
                     )
@@ -142,7 +142,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                     ) {
                         Text(
                             text = "+",
-                            fontSize = 24.sp // 增大“+”號的大小
+                            fontSize = 24.sp
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -157,22 +157,33 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 句子列表
-                SentenceList(
-                    sentences = sentences,
-                    currentLanguage = currentLanguage,
-                    tts = tts,
-                    onTranslationChanged = { sentence ->
-                        viewModel.updateSentence(sentence)
-                    },
-                    onDeleteSentence = { sentence ->
-                        viewModel.deleteSentence(sentence)
-                    },
-                    onSentenceOrderChanged = {
-                        viewModel.onSentenceOrderChanged()
-                    },
-                    modifier = Modifier.weight(1f) // 確保列表佔據剩餘空間
-                )
+                if (isLoading) {
+                    // 顯示佔位卡片列表
+                    LazyColumn(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        items(3) { // 假設顯示三個佔位卡
+                            PlaceholderCard()
+                        }
+                    }
+                } else {
+                    // 顯示句子列表
+                    SentenceList(
+                        sentences = sentences,
+                        currentLanguage = currentLanguage,
+                        tts = tts,
+                        onTranslationChanged = { sentence ->
+                            viewModel.updateSentence(sentence)
+                        },
+                        onDeleteSentence = { sentence ->
+                            viewModel.deleteSentence(sentence)
+                        },
+                        onSentenceOrderChanged = {
+                            viewModel.onSentenceOrderChanged()
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     )
