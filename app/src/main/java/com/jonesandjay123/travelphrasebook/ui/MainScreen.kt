@@ -1,6 +1,7 @@
 package com.jonesandjay123.travelphrasebook.ui
 
 import android.app.Application
+import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -32,7 +33,15 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
     val sentences = viewModel.sentences
 
     val languages = listOf("中", "英", "日", "泰")
-    var currentLanguage by remember { mutableStateOf("中") }
+    // 獲取 SharedPreferences 實例
+    val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
+
+    // 初始化 currentLanguage，讀取已保存的語言設置
+    var currentLanguage by remember {
+        mutableStateOf(
+            sharedPreferences.getString("current_language", "中") ?: "中"
+        )
+    }
 
     var newSentence by remember { mutableStateOf("") }
 
@@ -78,6 +87,8 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                         currentLanguage = currentLanguage,
                         onLanguageSelected = { selectedLanguage ->
                             currentLanguage = selectedLanguage
+                            // 保存選擇的語言到 SharedPreferences
+                            sharedPreferences.edit().putString("current_language", selectedLanguage).apply()
                         }
                     )
                 }
