@@ -141,8 +141,12 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
     }
 
     fun exportSentencesWithPrompt(): String {
-        // 获取当前的句子列表，添加 prompt，序列化为 JSON 字符串并返回
-        return ""
+        val prompt = """
+        我是一個繁體中文母語使用者，以下是我想要請你幫我翻譯成對應各國語言句子的json表格。
+        zh是我當前需要你翻譯的繁體句型依據、en代表英文、jp代表日文、th是泰文。請以貼近口語表達的方式幫我進行翻譯，並把填好完整的json回傳給我，謝謝。
+         """.trimIndent()
+        val jsonData = exportSentences()
+        return prompt + "\n" +  jsonData
     }
 
     // ExportSentence

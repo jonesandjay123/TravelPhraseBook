@@ -5,10 +5,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager // 添加此导入
+import androidx.compose.ui.text.AnnotatedString // 添加此导入
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.jonesandjay123.travelphrasebook.Sentence
@@ -24,6 +28,9 @@ fun ImportExportDialog(
     var jsonText by remember { mutableStateOf("") }
     var showConfirmDialog by remember { mutableStateOf(false) }
 
+    // 獲取剪貼板管理器實例
+    val clipboardManager = LocalClipboardManager.current
+
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
             shape = MaterialTheme.shapes.medium,
@@ -35,7 +42,7 @@ fun ImportExportDialog(
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
-                // 標題行，包含標題按關閉按鈕
+                // 標題行，包含標題和按鈕
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
@@ -45,6 +52,26 @@ fun ImportExportDialog(
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.weight(1f)
                     )
+                    // 貼上按钮
+                    IconButton(onClick = {
+                        val textFromClipboard = clipboardManager.getText()?.text ?: ""
+                        jsonText = textFromClipboard
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ContentPaste,
+                            contentDescription = "貼上"
+                        )
+                    }
+                    // 複製按钮
+                    IconButton(onClick = {
+                        clipboardManager.setText(AnnotatedString(jsonText))
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = "複製"
+                        )
+                    }
+                    // 關閉按钮
                     IconButton(onClick = onDismissRequest) {
                         Icon(
                             imageVector = Icons.Default.Close,
