@@ -17,4 +17,8 @@ class FakeSentenceDao : SentenceDao {
 
     override suspend fun deleteSentence(sentence: Sentence) {
     }
+
+    override suspend fun deleteAllSentences() {
+        TODO("Not yet implemented")
+    }
 }

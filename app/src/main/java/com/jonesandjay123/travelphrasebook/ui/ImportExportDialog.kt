@@ -1,6 +1,8 @@
 package com.jonesandjay123.travelphrasebook.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -58,7 +60,8 @@ fun ImportExportDialog(
                     onValueChange = { jsonText = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .height(200.dp)
+                        .verticalScroll(rememberScrollState()),
                     placeholder = { Text("在此處貼上或編輯 JSON 數據") },
                     singleLine = false,
                     maxLines = Int.MAX_VALUE

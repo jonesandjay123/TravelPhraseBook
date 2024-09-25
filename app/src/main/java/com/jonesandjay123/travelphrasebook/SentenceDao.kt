@@ -15,4 +15,7 @@ interface SentenceDao {
 
     @Delete
     suspend fun deleteSentence(sentence: Sentence)
+
+    @Query("DELETE FROM sentences")
+    suspend fun deleteAllSentences()
 }

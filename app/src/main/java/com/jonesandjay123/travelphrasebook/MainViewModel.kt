@@ -2,12 +2,14 @@ package com.jonesandjay123.travelphrasebook
 
 import android.app.Application
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,9 +25,7 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
     init {
         viewModelScope.launch {
             //  從數據庫加載數據
-            val sentenceList = withContext(Dispatchers.IO) {
-                sentenceDao.getAllSentences()
-            }
+            val sentenceList = sentenceDao.getAllSentences()
             // 從 SharedPreferences 中讀取保存的順序
             val orderString = sharedPreferences.getString("sentence_order", null)
             val orderedList = if (!orderString.isNullOrEmpty()) {
@@ -89,17 +89,68 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
     }
 
     fun importSentences(jsonText: String) {
-        // 解析 JSON，更新数据库
-        // 注意需要在 IO 线程中执行数据库操作
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val gson = Gson()
+                    val type = object : com.google.gson.reflect.TypeToken<List<ExportSentence>>() {}.type
+                    val importList: List<ExportSentence> = gson.fromJson(jsonText, type)
+
+                    // 清空數據庫和本地列表
+                    sentenceDao.deleteAllSentences()
+                    sentences.clear()
+
+                    // 插入新的句子，並按照順序添加到本地列表
+                    importList.sortedBy { it.order }.forEach { exportSentence ->
+                        val sentence = Sentence(
+                            chineseText = exportSentence.zh,
+                            englishText = exportSentence.en.ifEmpty { null },
+                            japaneseText = exportSentence.jp.ifEmpty { null },
+                            thaiText = exportSentence.th.ifEmpty { null }
+                        )
+                        val newId = sentenceDao.insertSentence(sentence)
+                        sentence.id = newId.toInt()
+                        sentences.add(sentence)
+                    }
+
+                    // 保存新的句子顺序
+                    saveSentenceOrder()
+                } catch (e: Exception) {
+                    // 處理解析錯誤
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(getApplication(), "導入失敗，JSON格式不正確", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 
     fun exportSentences(): String {
-        // 获取当前的句子列表，序列化为 JSON 字符串并返回
-        return ""
+        // 獲取當前的句子列表，序列化為 JSON 字符串返回
+        val exportList = sentences.mapIndexed { index, sentence ->
+            ExportSentence(
+                order = index + 1, // 顺序从 1 开始
+                zh = sentence.chineseText,
+                en = sentence.englishText ?: "",
+                jp = sentence.japaneseText ?: "",
+                th = sentence.thaiText ?: ""
+            )
+        }
+        val gson = Gson()
+        return gson.toJson(exportList)
     }
 
     fun exportSentencesWithPrompt(): String {
         // 获取当前的句子列表，添加 prompt，序列化为 JSON 字符串并返回
         return ""
     }
+
+    // ExportSentence
+    data class ExportSentence(
+        val order: Int,
+        val zh: String,
+        val en: String,
+        val jp: String,
+        val th: String
+    )
 }
