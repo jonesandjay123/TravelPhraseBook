@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager // 添加此导入
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString // 添加此导入
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -30,6 +31,7 @@ fun ImportExportDialog(
 
     // 獲取剪貼板管理器實例
     val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
 
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
@@ -52,6 +54,15 @@ fun ImportExportDialog(
                         style = MaterialTheme.typography.titleMedium,
                         modifier = Modifier.weight(1f)
                     )
+                    // 複製按钮
+                    IconButton(onClick = {
+                        clipboardManager.setText(AnnotatedString(jsonText))
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = "複製"
+                        )
+                    }
                     // 貼上按钮
                     IconButton(onClick = {
                         val textFromClipboard = clipboardManager.getText()?.text ?: ""
@@ -60,15 +71,6 @@ fun ImportExportDialog(
                         Icon(
                             imageVector = Icons.Default.ContentPaste,
                             contentDescription = "貼上"
-                        )
-                    }
-                    // 複製按钮
-                    IconButton(onClick = {
-                        clipboardManager.setText(AnnotatedString(jsonText))
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "複製"
                         )
                     }
                     // 關閉按钮
@@ -114,10 +116,13 @@ fun ImportExportDialog(
                         Text("帶prompt匯出")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = {
-                        // 顯示確認對話框
-                        showConfirmDialog = true
-                    }) {
+                    TextButton(
+                        onClick = {
+                            // 顯示確認對話框
+                            showConfirmDialog = true
+                        },
+                        enabled = jsonText.isNotBlank()
+                    ) {
                         Text("匯入")
                     }
                 }
@@ -127,23 +132,16 @@ fun ImportExportDialog(
 
     // 確認對話框
     if (showConfirmDialog) {
-        AlertDialog(
-            onDismissRequest = { showConfirmDialog = false },
-            title = { Text("確認匯入") },
-            text = { Text("這將導致當前的數據被覆蓋，是否繼續？") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showConfirmDialog = false
-                    onDismissRequest()
-                    onImport(jsonText)
-                }) {
-                    Text("確定")
-                }
+        ConfirmImportDialog(
+            title = "確認匯入",
+            message = "這將導致當前的數據被覆蓋，是否繼續？",
+            onConfirm = {
+                showConfirmDialog = false
+                onDismissRequest()
+                onImport(jsonText)
             },
-            dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) {
-                    Text("取消")
-                }
+            onDismiss = {
+                showConfirmDialog = false
             }
         )
     }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImportExport
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,8 +48,8 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
     }
 
     var newSentence by remember { mutableStateOf("") }
-
     var showDialog by remember { mutableStateOf(false) }
+    var showApiConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentLanguage) {
         if (tts != null) {
@@ -70,12 +71,35 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
         }
     }
 
+    // 如果需要顯示 API 確認對話框
+    if (showApiConfirmDialog) {
+        ConfirmImportDialog(
+            title = "覆蓋翻譯",
+            message = "將使用Google翻譯，把現有的文本內容進行覆蓋，是否繼續？",
+            onConfirm = {
+                showApiConfirmDialog = false
+                // 將在這裡調用API 翻譯功能
+            },
+            onDismiss = {
+                showApiConfirmDialog = false
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             // 頂部應用欄，包含語言選擇按鈕
             TopAppBar(
                 title = { Text(text = "旅行短語手冊") },
                 actions = {
+
+                    // 新的 API 翻译按钮
+                    IconButton(onClick = { showApiConfirmDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = "API 翻譯"
+                        )
+                    }
 
                     // 導入／匯出鈕
                     IconButton(onClick = { showDialog = true }) {
