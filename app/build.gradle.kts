@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -21,8 +23,12 @@ android {
         }
 
         // 讀取CLOUD_API_KEY
-        val apiKey: String = project.findProperty("CLOUD_API_KEY") as String? ?: ""
-        buildConfigField("String", "API_KEY", "\"$apiKey\"")
+        val apiKey: String? = rootProject.file("local.properties")
+            .takeIf { it.exists() }
+            ?.let { Properties().apply { load(it.inputStream()) } }
+            ?.getProperty("CLOUD_API_KEY")
+
+        buildConfigField("String", "API_KEY", "\"${apiKey ?: ""}\"")
     }
 
     buildTypes {
