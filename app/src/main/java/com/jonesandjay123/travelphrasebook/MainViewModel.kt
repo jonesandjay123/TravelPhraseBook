@@ -15,6 +15,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel(private val sentenceDao: SentenceDao, application: Application) : AndroidViewModel(application) {
+
+    private val apiKey = "YOUR_API_KEY"
+
+    var isTranslating by mutableStateOf(false)
+        private set
+
     val sentences = mutableStateListOf<Sentence>()
 
     var isLoading by mutableStateOf(true)
@@ -39,6 +45,60 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
             sentences.addAll(orderedList)
             // 數據加載完畢後，將 isLoading 設置回 false
             isLoading = false
+        }
+    }
+
+    fun translateSentencesWithApi() {
+        viewModelScope.launch {
+            isTranslating = true
+            withContext(Dispatchers.IO) {
+                try {
+                    val sentencesToTranslate = sentences.map { it.chineseText }
+
+                    // 定義目標語言列表
+                    val targetLanguages = listOf("en", "ja", "th")
+
+                    for (targetLang in targetLanguages) {
+                        val request = TranslationRequest(
+                            q = sentencesToTranslate,
+                            target = targetLang
+                        )
+                        val response = ApiClient.translationService.translateText(apiKey, request).execute()
+                        if (response.isSuccessful) {
+                            val translationResponse = response.body()
+                            val translations = translationResponse?.data?.translations
+                            if (translations != null && translations.size == sentences.size) {
+                                // 更新句子的翻譯
+                                for (i in sentences.indices) {
+                                    when (targetLang) {
+                                        "en" -> sentences[i].englishText = translations[i].translatedText
+                                        "ja" -> sentences[i].japaneseText = translations[i].translatedText
+                                        "th" -> sentences[i].thaiText = translations[i].translatedText
+                                    }
+                                    // 更新數據庫
+                                    sentenceDao.updateSentence(sentences[i])
+                                }
+                            } else {
+                                // 處理錯誤：翻譯數量不匹配
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(getApplication(), "翻譯結果數量不匹配", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        } else {
+                            // 處理錯誤：響應不成功
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(getApplication(), "翻譯失敗：${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    // 處理異常
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(getApplication(), "翻譯過程中發生錯誤：${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            isTranslating = false
         }
     }
 

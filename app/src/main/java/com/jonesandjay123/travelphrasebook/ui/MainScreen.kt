@@ -78,7 +78,8 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
             message = "將使用Google翻譯，把現有的文本內容進行覆蓋，是否繼續？",
             onConfirm = {
                 showApiConfirmDialog = false
-                // 將在這裡調用API 翻譯功能
+                // 調用API 翻譯功能
+                viewModel.translateSentencesWithApi()
             },
             onDismiss = {
                 showApiConfirmDialog = false
@@ -180,6 +181,17 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // 翻譯進度顯示器
+                if (viewModel.isTranslating) {
+
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
 
                 if (isLoading) {
                     // 顯示佔位卡片列表
