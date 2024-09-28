@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 
 class MainViewModel(private val sentenceDao: SentenceDao, application: Application) : AndroidViewModel(application) {
 
-    private val apiKey = "YOUR_API_KEY"
+    private val apiKey = BuildConfig.API_KEY
 
     var isTranslating by mutableStateOf(false)
         private set
