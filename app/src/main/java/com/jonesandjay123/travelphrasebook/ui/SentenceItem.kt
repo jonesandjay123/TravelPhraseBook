@@ -35,9 +35,7 @@ fun SentenceItem(
     // 判断播放按钮是否可用
     val isPlayable = when (currentLanguage) {
         "中" -> sentence.chineseText.isNotBlank()
-        "英" -> translationText.isNotBlank()
-        "日" -> translationText.isNotBlank()
-        "泰" -> translationText.isNotBlank()
+        "英", "日", "泰" -> translationText.isNotBlank()
         else -> false
     }
 

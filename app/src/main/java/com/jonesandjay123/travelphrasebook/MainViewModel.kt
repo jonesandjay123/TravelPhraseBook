@@ -53,45 +53,73 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
             isTranslating = true
             withContext(Dispatchers.IO) {
                 try {
-                    val sentencesToTranslate = sentences.map { it.chineseText }
-
                     // 定義目標語言列表
                     val targetLanguages = listOf("en", "ja", "th")
 
                     for (targetLang in targetLanguages) {
-                        val request = TranslationRequest(
-                            q = sentencesToTranslate,
-                            target = targetLang
-                        )
-                        val response = ApiClient.translationService.translateText(apiKey, request).execute()
-                        if (response.isSuccessful) {
-                            val translationResponse = response.body()
-                            val translations = translationResponse?.data?.translations
-                            if (translations != null && translations.size == sentences.size) {
-                                // 更新句子的翻譯
-                                for (i in sentences.indices) {
-                                    val currentSentence = sentences[i]
-                                    val updatedSentence = when (targetLang) {
-                                        "en" -> currentSentence.copy(englishText = translations[i].translatedText)
-                                        "ja" -> currentSentence.copy(japaneseText = translations[i].translatedText)
-                                        "th" -> currentSentence.copy(thaiText = translations[i].translatedText)
-                                        else -> currentSentence
+                        // 篩選出需要翻譯的句子
+                        val sentencesNeedingTranslation = sentences.filter { sentence ->
+                            when (targetLang) {
+                                "en" -> sentence.englishText.isNullOrEmpty()
+                                "ja" -> sentence.japaneseText.isNullOrEmpty()
+                                "th" -> sentence.thaiText.isNullOrEmpty()
+                                else -> false
+                            }
+                        }
+
+                        if (sentencesNeedingTranslation.isNotEmpty()) {
+                            // 收集需要翻譯的中文句子
+                            val sentencesToTranslate = sentencesNeedingTranslation.map { it.chineseText }
+
+                            // 創建翻譯請求
+                            val request = TranslationRequest(
+                                q = sentencesToTranslate,
+                                target = targetLang
+                            )
+
+                            // 發送API請求
+                            val response = ApiClient.translationService.translateText(apiKey, request).execute()
+
+                            if (response.isSuccessful) {
+                                val translationResponse = response.body()
+                                val translations = translationResponse?.data?.translations
+
+                                if (translations != null && translations.size == sentencesToTranslate.size) {
+                                    // 更新句子的翻譯
+                                    for (i in sentencesNeedingTranslation.indices) {
+                                        val sentence = sentencesNeedingTranslation[i]
+                                        val translatedText = translations[i].translatedText
+
+                                        val updatedSentence = when (targetLang) {
+                                            "en" -> sentence.copy(englishText = translatedText)
+                                            "ja" -> sentence.copy(japaneseText = translatedText)
+                                            "th" -> sentence.copy(thaiText = translatedText)
+                                            else -> sentence
+                                        }
+
+                                        // 找到列表中這個句子的索引
+                                        val index = sentences.indexOfFirst { it.id == sentence.id }
+
+                                        if (index != -1) {
+                                            // 替换列表中的句子
+                                            sentences[index] = updatedSentence
+
+                                            // 更新數據庫
+                                            sentenceDao.updateSentence(updatedSentence)
+                                        }
                                     }
-                                    // 替换列表中的句子
-                                    sentences[i] = updatedSentence
-                                    // 更新數據庫
-                                    sentenceDao.updateSentence(updatedSentence)
+                                } else {
+                                    // 邏輯錯誤：翻譯數量不匹配
+                                    withContext(Dispatchers.Main) {
+                                        Toast.makeText(getApplication(), "翻譯結果數量不匹配", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                             } else {
-                                // 處理錯誤：翻譯數量不匹配
+                                // 處理錯誤：響應不成功
+                                val errorMsg = response.errorBody()?.string()
                                 withContext(Dispatchers.Main) {
-                                    Toast.makeText(getApplication(), "翻譯結果數量不匹配", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(getApplication(), "翻譯錯誤：$errorMsg", Toast.LENGTH_SHORT).show()
                                 }
-                            }
-                        } else {
-                            // 處理錯誤：響應不成功
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(getApplication(), "翻譯失敗：${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -106,7 +134,7 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
         }
     }
 
-    // 保存排序顺序的方法
+    // 保存排序順序的方法
     private fun saveSentenceOrder() {
         val orderList = sentences.map { it.id }
         val orderString = orderList.joinToString(",")
