@@ -70,13 +70,17 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
                             if (translations != null && translations.size == sentences.size) {
                                 // 更新句子的翻譯
                                 for (i in sentences.indices) {
-                                    when (targetLang) {
-                                        "en" -> sentences[i].englishText = translations[i].translatedText
-                                        "ja" -> sentences[i].japaneseText = translations[i].translatedText
-                                        "th" -> sentences[i].thaiText = translations[i].translatedText
+                                    val currentSentence = sentences[i]
+                                    val updatedSentence = when (targetLang) {
+                                        "en" -> currentSentence.copy(englishText = translations[i].translatedText)
+                                        "ja" -> currentSentence.copy(japaneseText = translations[i].translatedText)
+                                        "th" -> currentSentence.copy(thaiText = translations[i].translatedText)
+                                        else -> currentSentence
                                     }
+                                    // 替换列表中的句子
+                                    sentences[i] = updatedSentence
                                     // 更新數據庫
-                                    sentenceDao.updateSentence(sentences[i])
+                                    sentenceDao.updateSentence(updatedSentence)
                                 }
                             } else {
                                 // 處理錯誤：翻譯數量不匹配
