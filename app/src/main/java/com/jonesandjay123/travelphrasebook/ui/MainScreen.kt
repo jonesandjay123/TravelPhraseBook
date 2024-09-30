@@ -91,7 +91,7 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
         topBar = {
             // 頂部應用欄，包含語言選擇按鈕
             TopAppBar(
-                title = { Text(text = "旅行短語手冊") },
+                title = { Text(text = "旅行短語手冊v0.0.9.30") },
                 actions = {
 
                     // 新的 API 翻译按钮
