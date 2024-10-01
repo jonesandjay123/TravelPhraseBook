@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowCircleUp
 import androidx.compose.material.icons.filled.ImportExport
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +28,11 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
+fun MainScreen(
+    tts: TextToSpeech?,
+    sentenceDao: SentenceDao,
+    onUploadToWearable: (String) -> Unit
+) {
     val application = LocalContext.current.applicationContext as Application
     val context = LocalContext.current
     val viewModel: MainViewModel = viewModel(
@@ -91,8 +97,18 @@ fun MainScreen(tts: TextToSpeech?, sentenceDao: SentenceDao) {
         topBar = {
             // 頂部應用欄，包含語言選擇按鈕
             TopAppBar(
-                title = { Text(text = "旅行短語手冊v0.0.9.30") },
+                title = { Text(text = "旅行短語手冊v0.0.10.1") },
                 actions = {
+                    // 新的上傳到手錶按鈕
+                    IconButton(onClick = {
+                        val phrasesJson = viewModel.exportSentences()
+                        onUploadToWearable(phrasesJson)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowCircleUp,
+                            contentDescription = "上傳到手錶"
+                        )
+                    }
 
                     // 新的 API 翻译按钮
                     IconButton(onClick = { showApiConfirmDialog = true }) {

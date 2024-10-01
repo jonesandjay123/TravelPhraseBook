@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.jonesandjay123.travelphrasebook"
-        minSdk = 21
+        minSdk = 25
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -68,7 +68,9 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
-    implementation(libs.gson)
+    implementation(libs.gson.v289)
+    implementation(libs.play.services.wearable.v1800)
+    implementation(libs.androidx.wear.v120)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.room.runtime)
