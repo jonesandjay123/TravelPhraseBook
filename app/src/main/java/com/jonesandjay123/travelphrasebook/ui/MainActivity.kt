@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.room.Room
+import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import com.jonesandjay123.travelphrasebook.AppDatabase
@@ -84,7 +85,7 @@ class MainActivity : ComponentActivity() {
         val putDataTask = dataClient.putDataItem(putDataRequest)
 
         putDataTask.addOnSuccessListener {
-            Log.d("MainActivity", "句子清單已成功上傳到 Data Layer")
+            Log.d("MainActivity", "句子清單已成功上傳到 Data Layer，URI: ${it.uri}")
             Toast.makeText(this, "已成功上傳句子清單到手錶", Toast.LENGTH_SHORT).show()
         }.addOnFailureListener { e ->
             Log.e("MainActivity", "上傳句子清單失敗：${e.message}")

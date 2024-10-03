@@ -97,7 +97,7 @@ fun MainScreen(
         topBar = {
             // 頂部應用欄，包含語言選擇按鈕
             TopAppBar(
-                title = { Text(text = "旅行短語手冊v0.0.10.1") },
+                title = { Text(text = "旅行短語手冊v0.0.10.3") },
                 actions = {
                     // 新的上傳到手錶按鈕
                     IconButton(onClick = {

@@ -63,13 +63,13 @@ android {
 }
 
 dependencies {
+    implementation(libs.play.services.wearable)
     implementation(libs.reorderable)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
     implementation(libs.gson.v289)
-    implementation(libs.play.services.wearable.v1800)
     implementation(libs.androidx.wear.v120)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
