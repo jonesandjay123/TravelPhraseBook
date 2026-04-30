@@ -30,8 +30,19 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
 
     init {
         viewModelScope.launch {
-            //  從數據庫加載數據
-            val sentenceList = sentenceDao.getAllSentences()
+            // 從數據庫加載數據；第一次打開時預載日本旅行常用句，確保離線也可直接播放。
+            var sentenceList = sentenceDao.getAllSentences()
+            if (sentenceList.isEmpty()) {
+                withContext(Dispatchers.IO) {
+                    PhrasePresets.japanSurvivalPack.map { it.copy(id = 0) }.forEach { preset ->
+                        val newId = sentenceDao.insertSentence(preset)
+                        preset.id = newId.toInt()
+                    }
+                }
+                sentenceList = sentenceDao.getAllSentences()
+                sharedPreferences.edit().remove("sentence_order").apply()
+            }
+
             // 從 SharedPreferences 中讀取保存的順序
             val orderString = sharedPreferences.getString("sentence_order", null)
             val orderedList = if (!orderString.isNullOrEmpty()) {
@@ -154,6 +165,26 @@ class MainViewModel(private val sentenceDao: SentenceDao, application: Applicati
             sentence.id = newId.toInt()
             sentences.add(sentence)
             saveSentenceOrder() // 保存排序顺序
+        }
+    }
+
+    fun addJapanSurvivalPack(onFinished: (Int) -> Unit = {}) {
+        viewModelScope.launch {
+            val existingChineseTexts = sentences.map { it.chineseText }.toSet()
+            val presetsToAdd = PhrasePresets.japanSurvivalPack
+                .filter { it.chineseText !in existingChineseTexts }
+                .map { it.copy(id = 0) }
+
+            withContext(Dispatchers.IO) {
+                presetsToAdd.forEach { preset ->
+                    val newId = sentenceDao.insertSentence(preset)
+                    preset.id = newId.toInt()
+                }
+            }
+
+            sentences.addAll(presetsToAdd)
+            saveSentenceOrder()
+            onFinished(presetsToAdd.size)
         }
     }
 

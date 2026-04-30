@@ -1,14 +1,19 @@
 package com.jonesandjay123.travelphrasebook.ui
 
 import android.speech.tts.TextToSpeech
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.jonesandjay123.travelphrasebook.Sentence
 
@@ -32,12 +37,16 @@ fun SentenceItem(
         )
     }
 
-    // 判断播放按钮是否可用
-    val isPlayable = when (currentLanguage) {
-        "中" -> sentence.chineseText.isNotBlank()
-        "英", "日", "泰" -> translationText.isNotBlank()
-        else -> false
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+
+    val textToSpeak = when (currentLanguage) {
+        "中" -> sentence.chineseText
+        else -> translationText
     }
+
+    // 判断播放按钮是否可用
+    val isPlayable = textToSpeak.isNotBlank()
 
     Card(
         modifier = modifier
@@ -57,10 +66,6 @@ fun SentenceItem(
                 // 播放按鈕
                 IconButton(
                     onClick = {
-                        val textToSpeak = when (currentLanguage) {
-                            "中" -> sentence.chineseText
-                            else -> translationText
-                        }
                         tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
                     },
                     enabled = isPlayable
@@ -79,6 +84,20 @@ fun SentenceItem(
                         .weight(1f)
                         .padding(start = 8.dp)
                 )
+
+                // 複製當前語言文字：出國時 TTS 或網路臨時失效，也能直接給對方看。
+                IconButton(
+                    onClick = {
+                        clipboardManager.setText(AnnotatedString(textToSpeak))
+                        Toast.makeText(context, "已複製：$textToSpeak", Toast.LENGTH_SHORT).show()
+                    },
+                    enabled = isPlayable
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = "複製"
+                    )
+                }
 
                 // 刪除按鈕
                 IconButton(

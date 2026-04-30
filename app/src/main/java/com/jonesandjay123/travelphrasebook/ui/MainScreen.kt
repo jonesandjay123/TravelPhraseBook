@@ -196,6 +196,24 @@ fun MainScreen(
                     )
                 }
 
+                OutlinedButton(
+                    onClick = {
+                        viewModel.addJapanSurvivalPack { addedCount ->
+                            val message = if (addedCount > 0) {
+                                "已加入 $addedCount 句日本旅行常用句"
+                            } else {
+                                "日本旅行常用句已經在清單中"
+                            }
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                ) {
+                    Text("加入日本旅行常用句")
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // 翻譯進度顯示器
